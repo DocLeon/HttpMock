@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -87,10 +88,16 @@ namespace HttpMock
 		private void StartListening() {
 			var ipEndPoint = new IPEndPoint(IPAddress.Any, _uri.Port);
 			_scheduler.Post(() =>{
-			                	_disposableServer = KayakServer.Factory
-			                		.CreateHttp(_requestProcessor, _scheduler)
-			                		.Listen(ipEndPoint);
-			                });
+				try
+				{
+					_disposableServer = KayakServer.Factory
+						.CreateHttp(_requestProcessor, _scheduler)
+						.Listen(ipEndPoint);
+				}catch(SocketException ex)
+				{
+					Debug.WriteLine(ex);
+				}
+			});
 
 			_scheduler.Start();
 		}
