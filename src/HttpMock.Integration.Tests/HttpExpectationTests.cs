@@ -9,10 +9,10 @@ namespace SevenDigital.HttpMock.Integration.Tests
 	{
 		[Test]
 		public void Should_assert_a_request_was_made() {
-			var stubHttp = HttpMockRepository.At("http://localhost:90");
+			var stubHttp = HttpMockRepository.At("http://localhost:9091");
 			stubHttp.Stub(x => x.Get("/api/status")).Return("OK").OK();
 
-			new WebClient().DownloadString("http://localhost:90/api/status");
+			new WebClient().DownloadString("http://localhost:9091/api/status");
 
 			stubHttp.AssertWasCalled(x => x.Get("/api/status"));
 
@@ -21,11 +21,11 @@ namespace SevenDigital.HttpMock.Integration.Tests
 		[Test]
 		public void Should_assert_that_a_request_was_not_made()
 		{
-			var stubHttp = HttpMockRepository.At("http://localhost:90");
+			var stubHttp = HttpMockRepository.At("http://localhost:9091");
 			stubHttp.Stub(x => x.Get("/api/status")).Return("OK").OK();
 			stubHttp.Stub(x => x.Get("/api/echo")).Return("OK").OK();
 
-			new WebClient().DownloadString("http://localhost:90/api/status");
+			new WebClient().DownloadString("http://localhost:9091/api/status");
 
 			stubHttp.AssertWasNotCalled(x => x.Get("/api/echo"));
 		}
@@ -33,7 +33,7 @@ namespace SevenDigital.HttpMock.Integration.Tests
 		[Test]
 		public void Should_assert_when_stub_is_missing()
 		{
-			var stubHttp = HttpMockRepository.At("http://localhost:90");
+			var stubHttp = HttpMockRepository.At("http://localhost:9091");
 
 			Assert.Throws<AssertionException>(() => stubHttp.AssertWasCalled(x => x.Get("/api/echo")));
 		}
@@ -41,11 +41,11 @@ namespace SevenDigital.HttpMock.Integration.Tests
 		[Test]
 		public void Should_match_a_POST_request_was_made_with_the_expected_body() {
 
-			var stubHttp = HttpMockRepository.At("http://localhost:90");
+			var stubHttp = HttpMockRepository.At("http://localhost:9091");
 			stubHttp.Stub(x => x.Post("/endpoint/handler")).Return("OK").OK();
 
 			string expectedData = "postdata";
-			new WebClient().UploadString("http://localhost:90/endpoint/handler", expectedData);
+			new WebClient().UploadString("http://localhost:9091/endpoint/handler", expectedData);
 
 			stubHttp.AssertWasCalled(x => x.Post("/endpoint/handler")).WithBody(expectedData) ;
 		}
