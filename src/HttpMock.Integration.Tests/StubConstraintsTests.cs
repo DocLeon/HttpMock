@@ -27,7 +27,7 @@ namespace SevenDigital.HttpMock.Integration.Tests
 			}
 			catch (WebException ex)
 			{
-				Assert.That(ex.Message, Is.EqualTo("The remote server returned an error: (404) Not Found."));
+				Assert.That(((HttpWebResponse)ex.Response).StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
 			}
 		}
 
