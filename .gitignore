@@ -9,3 +9,7 @@ bin
 log-file.txt
 Bin
 *.cache
+
+*.userprefs
+
+*.test-cache

@@ -86,7 +86,7 @@ namespace HttpMock
 
 		public override string ToString() {
 			var sb = new StringBuilder();
-			sb.AppendFormat("{0}:{1}{2}", Path, Method, Environment.NewLine);
+			sb.AppendFormat("{0}:{1}{2} {3}", Path, Method, RequestCount(), Environment.NewLine);
 			foreach (var param in QueryParams) {
 				sb.AppendLine(string.Format("{0}:{1}", param.Key, param.Value));
 			}

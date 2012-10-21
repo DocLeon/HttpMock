@@ -2,6 +2,7 @@ using System.IO;
 using System.Net;
 using HttpMock;
 using NUnit.Framework;
+using System;
 
 namespace SevenDigital.HttpMock.Integration.Tests
 {
@@ -11,29 +12,39 @@ namespace SevenDigital.HttpMock.Integration.Tests
 		private const string ENDPOINT_TO_HIT = "http://localhost:11111/endpoint";
 		private IHttpServer _httpMockRepository;
 
+		WebClient _client;
+
 		[SetUp]
 		public void SetUp() {
 			_httpMockRepository = HttpMockRepository.At("http://localhost:11111/");
+			_client = new WebClient();
+
 		}
 
 		[Test]
 		public void Should_get() {
+			var expectedResponse = "I am a GET";
 			_httpMockRepository
 				.Stub(x => x.Get("/endpoint"))
-				.Return("I am a GET")
+				.Return(expectedResponse)
 				.OK();
 
-			AssertResponse("GET", "I am a GET");
+			var response = _client.DownloadString(ENDPOINT_TO_HIT);
+			Assert.That(response, Is.EqualTo(expectedResponse));;
 		}
 
 		[Test]
 		public void Should_post() {
+			var expected = "I am a POST";
 			_httpMockRepository
 				.Stub(x => x.Post("/endpoint"))
-				.Return("I am a POST")
+				.Return(expected)
 				.OK();
 
-			AssertResponse("POST", "I am a POST");
+
+			var response = _client.UploadString(ENDPOINT_TO_HIT, "data");
+
+
 		}
 
 		[Test]
@@ -52,7 +63,7 @@ namespace SevenDigital.HttpMock.Integration.Tests
 				.Stub(x => x.Delete("/endpoint"))
 				.Return("I am a DELETE")
 				.OK();
-
+		
 			AssertResponse("DELETE", "I am a DELETE");
 		}
 
@@ -60,14 +71,17 @@ namespace SevenDigital.HttpMock.Integration.Tests
 		public void Should_head() {
 			_httpMockRepository
 				.Stub(x => x.Head("/endpoint"))
-				.Return("I am a HEAD")
 				.OK();
+
 
 			var webRequest = (HttpWebRequest)WebRequest.Create(ENDPOINT_TO_HIT);
 			webRequest.Method = "HEAD";
-			using (var response = webRequest.GetResponse()) {
+
+			using (var response = (HttpWebResponse) webRequest.GetResponse()) {
+				var str = new StreamReader (response.GetResponseStream ()).ReadToEnd ();
+				 Console.WriteLine(str);
 				Assert.That(response.Headers.Count, Is.GreaterThan(0));
-				Assert.That(response.GetResponseStream().CanSeek, Is.False);
+				Assert.That(response.ContentLength, Is.EqualTo(0));
 			}
 		}
 
@@ -87,6 +101,10 @@ namespace SevenDigital.HttpMock.Integration.Tests
 
 			var webRequest = (HttpWebRequest)WebRequest.Create(ENDPOINT_TO_HIT);
 			webRequest.Method = method;
+			StreamWriter streamWriter = new StreamWriter( webRequest.GetRequestStream());
+			using(streamWriter){
+				streamWriter.Write(expected);
+			}
 			using(var response = webRequest.GetResponse()) {
 				using(var sr = new StreamReader(response.GetResponseStream()))
 				{
