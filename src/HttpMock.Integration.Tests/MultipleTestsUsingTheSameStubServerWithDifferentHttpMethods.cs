@@ -1,10 +1,9 @@
 using System.IO;
 using System.Net;
-using HttpMock;
 using NUnit.Framework;
 using System;
 
-namespace SevenDigital.HttpMock.Integration.Tests
+namespace HttpMock.Integration.Tests
 {
 	[TestFixture]
 	public class MultipleTestsUsingTheSameStubServerWithDifferentHttpMethods
