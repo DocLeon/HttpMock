@@ -2,9 +2,11 @@
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
+using System.Reflection;
 using System.Threading;
 using Kayak;
 using Kayak.Http;
+using log4net;
 
 namespace HttpMock
 {
@@ -16,6 +18,7 @@ namespace HttpMock
 		private readonly IScheduler _scheduler;
 		private readonly Uri _uri;
 		private IDisposable _disposableServer;
+		private static readonly ILog _log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
 		private Thread _thread;
 		private readonly RequestHandlerFactory _requestHandlerFactory;
@@ -95,7 +98,7 @@ namespace HttpMock
 						.Listen(ipEndPoint);
 				}catch(SocketException ex)
 				{
-					Debug.WriteLine(ex);
+					_log.Debug("Error trying to listen on socket", ex);
 				}
 			});
 
