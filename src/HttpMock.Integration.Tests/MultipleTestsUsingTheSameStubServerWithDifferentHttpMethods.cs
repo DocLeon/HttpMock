@@ -21,6 +21,12 @@ namespace HttpMock.Integration.Tests
 
 		}
 
+		[TestFixtureTearDown]
+		public void FixtureTearDown()
+		{
+			_httpMockRepository.Dispose();
+		}
+
 		[SetUp]
 		public void SetUp()
 		{
