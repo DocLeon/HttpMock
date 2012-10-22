@@ -14,61 +14,78 @@ namespace SevenDigital.HttpMock.Integration.Tests
 
 		WebClient _client;
 
-		[SetUp]
-		public void SetUp() {
+		[TestFixtureSetUp]
+		public void TestFixtureSetUp()
+		{
 			_httpMockRepository = HttpMockRepository.At("http://localhost:11111/");
 			_client = new WebClient();
 
 		}
 
+		[SetUp]
+		public void SetUp()
+		{
+			_httpMockRepository.WithNewContext();
+		}
+
 		[Test]
-		public void Should_get() {
-			var expectedResponse = "I am a GET";
+		public void Should_get()
+		{
+			const string expectedResponse = "I am a GET";
 			_httpMockRepository
 				.Stub(x => x.Get("/endpoint"))
 				.Return(expectedResponse)
 				.OK();
 
 			var response = _client.DownloadString(ENDPOINT_TO_HIT);
-			Assert.That(response, Is.EqualTo(expectedResponse));;
+			Assert.That(response, Is.EqualTo(expectedResponse)); ;
 		}
 
 		[Test]
-		public void Should_post() {
-			var expected = "I am a POST";
+		public void Should_post()
+		{
+			const string expectedResponse = "I am a POST";
 			_httpMockRepository
 				.Stub(x => x.Post("/endpoint"))
-				.Return(expected)
+				.Return(expectedResponse)
 				.OK();
 
 
 			var response = _client.UploadString(ENDPOINT_TO_HIT, "data");
+			Assert.That(response, Is.EqualTo(expectedResponse));
 
 
 		}
 
 		[Test]
-		public void Should_put() {
+		public void Should_put()
+		{
+			const string expectedResponse = "I am a PUT";
 			_httpMockRepository
 				.Stub(x => x.Put("/endpoint"))
-				.Return("I am a PUT")
+				.Return(expectedResponse)
 				.OK();
 
-			AssertResponse("PUT", "I am a PUT");
+			var response = _client.UploadString(ENDPOINT_TO_HIT, "PUT", "data");
+			Assert.That(response, Is.EqualTo(expectedResponse));
 		}
 
 		[Test]
-		public void Should_delete() {
+		public void Should_delete()
+		{
+			const string expectedResponse = "I am a DELETE";
 			_httpMockRepository
 				.Stub(x => x.Delete("/endpoint"))
-				.Return("I am a DELETE")
+				.Return(expectedResponse)
 				.OK();
-		
-			AssertResponse("DELETE", "I am a DELETE");
+
+			var response = _client.UploadString(ENDPOINT_TO_HIT, "DELETE", "data");
+			Assert.That(response, Is.EqualTo(expectedResponse));
 		}
 
 		[Test]
-		public void Should_head() {
+		public void Should_head()
+		{
 			_httpMockRepository
 				.Stub(x => x.Head("/endpoint"))
 				.OK();
@@ -77,40 +94,27 @@ namespace SevenDigital.HttpMock.Integration.Tests
 			var webRequest = (HttpWebRequest)WebRequest.Create(ENDPOINT_TO_HIT);
 			webRequest.Method = "HEAD";
 
-			using (var response = (HttpWebResponse) webRequest.GetResponse()) {
-				var str = new StreamReader (response.GetResponseStream ()).ReadToEnd ();
-				 Console.WriteLine(str);
+			using (var response = (HttpWebResponse)webRequest.GetResponse())
+			{
+				var str = new StreamReader(response.GetResponseStream()).ReadToEnd();
+				Console.WriteLine(str);
 				Assert.That(response.Headers.Count, Is.GreaterThan(0));
 				Assert.That(response.ContentLength, Is.EqualTo(0));
 			}
 		}
 
 		[Test]
-		public void If_no_Mocked_Endpoints_matched_then_should_return_404_with_HttpMockError_status() {
-			var webRequest = (HttpWebRequest)WebRequest.Create("http://localhost:11111/zendpoint");
-			try {
-				using(webRequest.GetResponse()) {
-				}
-			} catch(WebException ex){
+		public void When_no_mocked_endpoints_matched_then_should_return_404_with_http_mock_error_status()
+		{
+
+			try
+			{
+				var response = _client.DownloadString("http://localhost:11111/zendpoint");
+			}
+			catch (WebException ex)
+			{
 				Assert.That(((HttpWebResponse)ex.Response).StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
 				Assert.That(((HttpWebResponse)ex.Response).Headers["SevenDigital-HttpMockError"], Is.Not.Null, "Header not set");
-			}
-		}
-
-		private void AssertResponse(string method, string expected) {
-
-			var webRequest = (HttpWebRequest)WebRequest.Create(ENDPOINT_TO_HIT);
-			webRequest.Method = method;
-			StreamWriter streamWriter = new StreamWriter( webRequest.GetRequestStream());
-			using(streamWriter){
-				streamWriter.Write(expected);
-			}
-			using(var response = webRequest.GetResponse()) {
-				using(var sr = new StreamReader(response.GetResponseStream()))
-				{
-					string readToEnd = sr.ReadToEnd();
-					Assert.That(readToEnd, Is.EqualTo(expected));
-				}
 			}
 		}
 	}
